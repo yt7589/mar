@@ -17,7 +17,7 @@ Host github.com
   User git
   IdentityFile /home/psdz/diskc/yantao/github_id_rsa
 ##############################################################################
-
+ssh -T yt7589@github.com
 # 登录Github添加Deploy Key，将github_id_rsa.pub中内容贴到网页中
 ```
 
