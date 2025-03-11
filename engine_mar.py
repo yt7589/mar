@@ -51,18 +51,18 @@ def train_one_epoch(model, vae,
         # we use a per iteration (instead of per epoch) lr scheduler
         lr_sched.adjust_learning_rate(optimizer, data_iter_step / len(data_loader) + epoch, args)
 
-        samples = samples.to(device, non_blocking=True)
-        labels = labels.to(device, non_blocking=True)
+        samples = samples.to(device, non_blocking=True) # (batch_size, 3, 256, 256)
+        labels = labels.to(device, non_blocking=True) # (batch_size, ) 图片的类别编号
 
         with torch.no_grad():
             if args.use_cached:
                 moments = samples
                 posterior = DiagonalGaussianDistribution(moments)
             else:
-                posterior = vae.encode(samples)
+                posterior = vae.encode(samples) # DiagonalGaussianDistribution：是一个可采样的分布
 
             # normalize the std of latent to be 1. Change it if you use a different tokenizer
-            x = posterior.sample().mul_(0.2325)
+            x = posterior.sample().mul_(0.2325) # (batch_size, 16, 16, 16)
 
         # forward
         with torch.cuda.amp.autocast():

@@ -20,6 +20,7 @@ from models.vae import AutoencoderKL
 from models import mar
 from engine_mar import train_one_epoch, evaluate
 import copy
+from conf.app_config import AppConfig as AF
 
 
 def get_args_parser():
@@ -185,7 +186,8 @@ def main(args):
     )
 
     # define the vae and mar model
-    vae = AutoencoderKL(embed_dim=args.vae_embed_dim, ch_mult=(1, 1, 2, 2, 4), ckpt_path=args.vae_path).cuda().eval()
+    # vae = AutoencoderKL(embed_dim=args.vae_embed_dim, ch_mult=(1, 1, 2, 2, 4), ckpt_path=args.vae_path).cuda().eval()
+    vae = AutoencoderKL(embed_dim=16, ch_mult=(1, 1, 2, 2, 4), ckpt_path="work/pretrained_models/vae/kl16.ckpt").cuda().eval()
     for param in vae.parameters():
         param.requires_grad = False
 
@@ -213,6 +215,10 @@ def main(args):
     print("Number of trainable parameters: {}M".format(n_params / 1e6))
 
     model.to(device)
+    # 载入预训练模型
+    model_type = "mar_base" #@param ["mar_base", "mar_large", "mar_huge"]
+    state_dict = torch.load(f"work/pretrained_models/mar/{model_type}/checkpoint-last.pth".format(model_type))["model_ema"]
+    model.load_state_dict(state_dict)
     model_without_ddp = model
 
     eff_batch_size = args.batch_size * misc.get_world_size()
@@ -303,6 +309,7 @@ def main(args):
 
 
 if __name__ == '__main__':
+    AF.initialize()
     args = get_args_parser()
     args = args.parse_args()
     Path(args.output_dir).mkdir(parents=True, exist_ok=True)

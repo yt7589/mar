@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 
 import numpy as np
-
+from conf.app_config import AppConfig as AF
 
 def nonlinearity(x):
     # swish
@@ -398,9 +398,10 @@ class Decoder(nn.Module):
 
 class DiagonalGaussianDistribution(object):
     def __init__(self, parameters, deterministic=False):
-        self.parameters = parameters
+        self.parameters = parameters # (batch_size,32,16,16)
         self.mean, self.logvar = torch.chunk(parameters, 2, dim=1)
         self.logvar = torch.clamp(self.logvar, -30.0, 20.0)
+        # self.mean: (bs,16,16,16); self.logvar: (bs,16,16,16)
         self.deterministic = deterministic
         self.std = torch.exp(0.5 * self.logvar)
         self.var = torch.exp(self.logvar)
@@ -471,9 +472,9 @@ class AutoencoderKL(nn.Module):
         print(f"Restored from {path}")
 
     def encode(self, x):
-        h = self.encoder(x)
-        moments = self.quant_conv(h)
-        if not self.use_variational:
+        h = self.encoder(x) # h:(batch_size, 32, 16, 16)
+        moments = self.quant_conv(h) # moments: (batch_size, 32, 16, 16)
+        if not self.use_variational: # self.use_variational=False
             moments = torch.cat((moments, torch.ones_like(moments)), 1)
         posterior = DiagonalGaussianDistribution(moments)
         return posterior

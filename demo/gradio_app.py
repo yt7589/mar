@@ -43,13 +43,14 @@ pipeline = DiffusionPipeline.from_pretrained("jadechoghari/mar", trust_remote_co
 @spaces.GPU
 def generate_image(seed, num_ar_steps, class_labels, cfg_scale, cfg_schedule):
     generated_image = pipeline(
-        model_type="mar_huge",  # using mar_huge
+        # model_type="mar_huge",  # using mar_huge
+        model_type="mar_base",  # using mar_huge
         seed=seed,
         num_ar_steps=num_ar_steps,
         class_labels=[int(label.strip()) for label in class_labels.split(',')],
         cfg_scale=cfg_scale,
         cfg_schedule=cfg_schedule,
-        output_dir="./images"
+        output_dir="./outputs/images"
     )
     return generated_image
 
